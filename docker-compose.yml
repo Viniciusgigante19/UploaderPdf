@@ -1,0 +1,64 @@
+services:
+
+  # NODE
+  node-web-aula-13-container:
+    build:
+      context: .
+      dockerfile: docker/node22-web/Dockerfile.dev
+    env_file: .env
+    volumes:
+      - .:/app
+      - node-modules-aula13-volume:/app/node_modules
+    restart: unless-stopped
+    environment:
+      - NODE_PORT=3000
+      - IS_CONTAINER=TRUE
+    ports:
+      - "3000:3000"
+    networks:
+      - project-aula13-network
+    depends_on:
+      - postgres-aula13-container
+
+  # NGINX (comentado, pode ativar se quiser)
+  # nginx-aula13-container:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/nginx/Dockerfile
+  #   ports:
+  #     - "${PORT}:80"
+  #   volumes:
+  #     - ./public:/var/www/public
+  #   depends_on:
+  #     - node-web-aula-13-container
+  #   networks:
+  #     - project-aula13-network
+
+  # POSTGRES
+  postgres-aula13-container:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: America/Sao_Paulo
+    ports:
+      - "6789:${POSTGRES_PORT}"
+    volumes:
+      - pgdata-aula13-volume:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      project-aula13-network:
+        aliases:
+          - ${POSTGRES_HOST}
+
+# OUTROS
+
+networks:
+  project-aula13-network:
+    driver: bridge
+
+volumes:
+  pgdata-aula13-volume:
+  node-modules-aula13-volume:

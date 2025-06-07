@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  title: API do Meu Projeto
+  version: 1.0.0
+  description: Documentação da API usando Swagger YAML
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /criar-usuarios:
+    get:
+      summary: Cria um usuário mock
+      description: Rota GET que cria um usuário de teste mock. Não necessita corpo de requisição.
+      responses:
+        '200':
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Usuário criado com sucesso!
+
+  /login:
+    post:
+      summary: Efetuar login
+      description: Realiza o login do usuário e retorna um token JWT válido por 10 minutos.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - senha
+              properties:
+                email:
+                  type: string
+                  example: user1@example.com
+                senha:
+                  type: string
+                  example: 123456
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token JWT válido por 10 minutos
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  expires_in:
+                    type: string
+                    example: 10m
+        '401':
+          description: Credenciais inválidas
+
+  /api/users/pdf:
+    post:
+      summary: Upload de arquivo PDF
+      description: Faz o upload de um arquivo PDF com autenticação JWT.
+      tags:
+        - Upload
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                pdf:
+                  type: string
+                  format: binary
+                  description: Arquivo PDF a ser enviado
+      responses:
+        '200':
+          description: Documento enviado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Documento enviado com sucesso!
+                  arquivo:
+                    type: string
+                    example: 1749325912863_meu_arquivo.pdf
+        '400':
+          description: Arquivo inválido ou ausente
+        '401':
+          description: Token de autenticação ausente ou inválido
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
